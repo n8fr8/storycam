@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.widget.Toast;
 
 import com.coremedia.iso.boxes.Container;
 import com.googlecode.mp4parser.FileDataSourceImpl;
@@ -15,6 +16,7 @@ import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
 import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator;
 import com.googlecode.mp4parser.authoring.tracks.AACTrackImpl;
 import com.googlecode.mp4parser.authoring.tracks.AppendTrack;
+import com.googlecode.mp4parser.authoring.tracks.H264TrackImpl;
 import com.googlecode.mp4parser.authoring.tracks.MP3TrackImpl;
 
 import java.io.File;
@@ -59,10 +61,10 @@ public class MergeVideosTask extends AsyncTask<String, Integer, File> {
     @Override
     protected File doInBackground(String... params) {
 
-        File myMovie = null;
-
         int count = videosToMerge.size();
+
         try {
+
             Movie[] inMovies = new Movie[count];
             int i = 0;
 
@@ -88,15 +90,13 @@ public class MergeVideosTask extends AsyncTask<String, Integer, File> {
 
             Movie result = new Movie();
 
-            if (audioPath == null) {
+            if (audioPath == null || (!new File(audioPath).exists())) {
                 if (audioTracks.size() > 0) {
                     result.addTrack(new AppendTrack(audioTracks
                             .toArray(new Track[audioTracks.size()])));
                 }
             }
             else {
-
-                // MP3TrackImpl mp3Track = new MP3TrackImpl(new FileDataSourceImpl(audioFile));
 
                 Track audioTrack = null;
 
@@ -107,6 +107,11 @@ public class MergeVideosTask extends AsyncTask<String, Integer, File> {
                 else if (audioPath.endsWith("mp3"))
                 {
                     audioTrack = new MP3TrackImpl(new FileDataSourceImpl(audioPath));
+
+                }
+                else if (audioPath.endsWith("mp4"))
+                {
+                    audioTrack = new H264TrackImpl(new FileDataSourceImpl(audioPath));
 
                 }
                 else if (audioPath.endsWith("m4a"))
@@ -121,7 +126,7 @@ public class MergeVideosTask extends AsyncTask<String, Integer, File> {
                 }
 
                 if (audioTrack != null)
-                    result.addTrack(new AppendTrack(audioTrack));
+                    result.addTrack(audioTrack);
             }
 
             if (videoTracks.size() > 0) {
@@ -140,19 +145,19 @@ public class MergeVideosTask extends AsyncTask<String, Integer, File> {
                 FileChannel fc = new FileOutputStream(fileOutput).getChannel();
                 mp4file.writeContainer(fc);
                 fc.close();
+
+                return fileOutput;
             }
 
         } catch (FileNotFoundException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
-            return null;
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
-            return null;
         }
 
-        return myMovie;
+        return null;
     }
 
     @Override
@@ -160,18 +165,24 @@ public class MergeVideosTask extends AsyncTask<String, Integer, File> {
         super.onPostExecute(file);
         progressDialog.dismiss();
 
-        MediaScannerConnection.scanFile(context, new String[]{file.getAbsolutePath()}, null,
-                new MediaScannerConnection.OnScanCompletedListener() {
-                    public void onScanCompleted(String path, Uri uri) {
-                        context.sendBroadcast(new Intent("android.hardware.action.NEW_VIDEO", uri));
+        if (file != null) {
+            MediaScannerConnection.scanFile(context, new String[]{file.getAbsolutePath()}, null,
+                    new MediaScannerConnection.OnScanCompletedListener() {
+                        public void onScanCompleted(String path, Uri uri) {
+                            context.sendBroadcast(new Intent("android.hardware.action.NEW_VIDEO", uri));
 
+                        }
                     }
-                }
-        );
+            );
 
-        Intent intent = new Intent(Intent.ACTION_VIEW);
-        intent.setData(Uri.fromFile(file));
-        context.startActivity(intent);
+            Intent intent = new Intent(Intent.ACTION_VIEW);
+            intent.setData(Uri.fromFile(file));
+            context.startActivity(intent);
+        }
+        else
+        {
+            Toast.makeText(context,"There was a problem rendering your movie",Toast.LENGTH_LONG).show();
+        }
     }
 
 }

@@ -398,7 +398,10 @@ public class MainActivity extends Activity {
                 applicationInterface.clearSessionCaptureHistory();
                 mLastAudioPath = null;
                 break;
-            case R.id.action_voice_over:
+            case R.id.action_select_audio:
+                selectAudio();
+                break;
+            case R.id.action_record_audio:
                 recordAudio();
                 break;
 			default:
@@ -2810,6 +2813,23 @@ public class MainActivity extends Activity {
 	}
 
     private void recordAudio () {
+
+        try {
+            File fileAudio = new File("/sdcard/storycam/audio" + new java.util.Date().getTime() + ".mp4");
+                    //applicationInterface.createOutputVideoFile();
+            fileAudio.getParentFile().mkdirs();
+            mLastAudioPath = fileAudio.getAbsolutePath();
+            AudioRecorder ar = new AudioRecorder();
+            ar.showAudioRecording(this, fileAudio);
+        }
+        catch (Exception ioe)
+        {
+            ioe.printStackTrace();
+            mLastAudioPath = null;
+        }
+    }
+
+    private void selectAudio () {
 
         Intent intent_upload = new Intent();
         intent_upload.setType("audio/*");
