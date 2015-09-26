@@ -2823,7 +2823,7 @@ public class MainActivity extends Activity {
     private void recordAudio () {
 
         try {
-            File fileAudio = new File("/sdcard/storycam/audio" + new java.util.Date().getTime() + ".mp4");
+            File fileAudio = new File("/sdcard/storycam/audio" + new java.util.Date().getTime() + ".aac");
             fileAudio.getParentFile().mkdirs();
             mLastAudioPath = fileAudio.getAbsolutePath();
             AudioRecorder ar = new AudioRecorder();
