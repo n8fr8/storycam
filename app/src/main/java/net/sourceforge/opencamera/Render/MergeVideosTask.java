@@ -16,7 +16,6 @@ import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
 import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator;
 import com.googlecode.mp4parser.authoring.tracks.AACTrackImpl;
 import com.googlecode.mp4parser.authoring.tracks.AppendTrack;
-import com.googlecode.mp4parser.authoring.tracks.H264TrackImpl;
 import com.googlecode.mp4parser.authoring.tracks.MP3TrackImpl;
 
 import java.io.File;
@@ -111,7 +110,13 @@ public class MergeVideosTask extends AsyncTask<String, Integer, File> {
                 }
                 else if (audioPath.endsWith("mp4"))
                 {
-                    audioTrack = new H264TrackImpl(new FileDataSourceImpl(audioPath));
+                    Movie movieAudio =  MovieCreator.build(audioPath);
+                    for (Track t : movieAudio.getTracks()) {
+                        if (t.getHandler().equals("soun")) {
+                            audioTrack = t;
+                            break;
+                        }
+                    }
 
                 }
                 else if (audioPath.endsWith("m4a"))

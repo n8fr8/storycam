@@ -83,6 +83,7 @@ import android.widget.PopupMenu;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
+import android.widget.Toast;
 import android.widget.ZoomControls;
 
 import com.larvalabs.svgandroid.SVG;
@@ -2801,9 +2802,16 @@ public class MainActivity extends Activity {
 	{
 		try {
 			ArrayList<String> videos = applicationInterface.getSessionCaptureHistory();
-			File fileMerge = applicationInterface.createOutputVideoFile();
 
-			new MergeVideosTask(this, fileMerge, videos, mLastAudioPath).execute();
+            if (videos.size() > 0) {
+                File fileMerge = applicationInterface.createOutputVideoFile();
+
+                new MergeVideosTask(this, fileMerge, videos, mLastAudioPath).execute();
+            }
+            else
+            {
+                Toast.makeText(this,"Please record some videos first, then make a movie!",Toast.LENGTH_SHORT).show();
+            }
 		}
 		catch (IOException ioe)
 		{
@@ -2816,7 +2824,6 @@ public class MainActivity extends Activity {
 
         try {
             File fileAudio = new File("/sdcard/storycam/audio" + new java.util.Date().getTime() + ".mp4");
-                    //applicationInterface.createOutputVideoFile();
             fileAudio.getParentFile().mkdirs();
             mLastAudioPath = fileAudio.getAbsolutePath();
             AudioRecorder ar = new AudioRecorder();

@@ -50,7 +50,12 @@ public class AudioRecorder implements Runnable {
             public void onClick(DialogInterface dialogInterface, int i) {
                 alertDialog.dismiss();
 
-                stopAudioRecording();
+                handler.post(new Runnable() {
+                    public void run() {
+                        stopAudioRecording();
+                    }
+                });
+
                 timer.cancel();
             }
         });
@@ -107,7 +112,6 @@ public class AudioRecorder implements Runnable {
         if (mMediaRecorder != null && mAudioFilePath != null) {
 
             mMediaRecorder.stop();
-
             mMediaRecorder.reset();
             mMediaRecorder.release();
 
