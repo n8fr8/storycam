@@ -3,9 +3,9 @@ package net.sourceforge.opencamera;
 import net.sourceforge.opencamera.CameraController.CameraController;
 import net.sourceforge.opencamera.CameraController.CameraControllerManager2;
 import net.sourceforge.opencamera.Preview.Preview;
+import net.sourceforge.opencamera.Render.MergeVideosTask;
 import net.sourceforge.opencamera.UI.FolderChooserDialog;
 import net.sourceforge.opencamera.UI.PopupView;
-import net.sourceforge.opencamera.autoawesome.Combiner;
 
 import java.io.File;
 import java.io.IOException;
@@ -22,7 +22,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.ColorFilter;
 import android.graphics.Matrix;
 import android.graphics.Picture;
 import android.graphics.PorterDuff;
@@ -80,14 +79,15 @@ import android.view.animation.ScaleAnimation;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.PopupMenu;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
+import android.widget.Toast;
 import android.widget.ZoomControls;
 
 import com.larvalabs.svgandroid.SVG;
 import com.larvalabs.svgandroid.SVGBuilder;
-import com.larvalabs.svgandroid.SVGParser;
 
 public class MainActivity extends Activity {
 	private static final String TAG = "MainActivity";
@@ -380,6 +380,7 @@ public class MainActivity extends Activity {
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.main, menu);
+
 		return true;
 	}
 
@@ -398,7 +399,10 @@ public class MainActivity extends Activity {
                 applicationInterface.clearSessionCaptureHistory();
                 mLastAudioPath = null;
                 break;
-            case R.id.action_voice_over:
+            case R.id.action_select_audio:
+                selectAudio();
+                break;
+            case R.id.action_record_audio:
                 recordAudio();
                 break;
 			default:
@@ -1289,7 +1293,21 @@ public class MainActivity extends Activity {
     public void clickedSettings(View view) {
 		if( MyDebug.LOG )
 			Log.d(TAG, "clickedSettings");
-		openSettings();
+        PopupMenu popupMenu = new PopupMenu(this, view);
+
+        popupMenu.inflate(R.menu.main);
+
+        popupMenu.setOnMenuItemClickListener(
+                new PopupMenu.OnMenuItemClickListener() {
+                    @Override
+                    public boolean onMenuItemClick(MenuItem item) {
+
+                        return onMenuItemSelected(1, item);
+                    }
+                });
+
+
+        popupMenu.show();
     }
 
     public boolean popupIsOpen() {
@@ -2782,13 +2800,43 @@ public class MainActivity extends Activity {
 
 	private void makeMovie()
 	{
-		ArrayList<String> videos = applicationInterface.getSessionCaptureHistory();
+		try {
+			ArrayList<String> videos = applicationInterface.getSessionCaptureHistory();
 
-		new Combiner(this).merge("/sdcard/smx",videos,mLastAudioPath);
+            if (videos.size() > 0) {
+                File fileMerge = applicationInterface.createOutputVideoFile();
+
+                new MergeVideosTask(this, fileMerge, videos, mLastAudioPath).execute();
+            }
+            else
+            {
+                Toast.makeText(this,"Please record some videos first, then make a movie!",Toast.LENGTH_SHORT).show();
+            }
+		}
+		catch (IOException ioe)
+		{
+			ioe.printStackTrace();
+		}
 
 	}
 
     private void recordAudio () {
+
+        try {
+            File fileAudio = new File("/sdcard/storycam/audio" + new java.util.Date().getTime() + ".mp4");
+            fileAudio.getParentFile().mkdirs();
+            mLastAudioPath = fileAudio.getAbsolutePath();
+            AudioRecorder ar = new AudioRecorder();
+            ar.showAudioRecording(this, fileAudio);
+        }
+        catch (Exception ioe)
+        {
+            ioe.printStackTrace();
+            mLastAudioPath = null;
+        }
+    }
+
+    private void selectAudio () {
 
         Intent intent_upload = new Intent();
         intent_upload.setType("audio/*");

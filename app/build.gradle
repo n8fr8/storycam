@@ -21,5 +21,5 @@ android {
 dependencies {
     compile 'com.android.support:support-v4:22.0.0'
     compile 'com.github.japgolly.android:svg-android:2.0.6'
-    compile 'com.googlecode.mp4parser:isoparser:1.0.+'
+    compile 'com.googlecode.mp4parser:isoparser:1.1.7'
 }
