@@ -3,17 +3,22 @@ apply plugin: 'com.android.application'
 android {
     compileSdkVersion 21
     buildToolsVersion "23.0.1"
-
     defaultConfig {
         applicationId "net.sourceforge.opencamera"
         minSdkVersion 15
         targetSdkVersion 22
     }
-
     buildTypes {
         release {
-            minifyEnabled true
+            minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+        }
+    }
+    productFlavors {
+        storycamrelease {
+            minSdkVersion 15
+            applicationId 'org.storymaker.camera'
+            targetSdkVersion 22
         }
     }
 }
