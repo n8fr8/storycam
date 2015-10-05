@@ -175,14 +175,12 @@ public class MergeVideosTask extends AsyncTask<String, Integer, File> {
                     new MediaScannerConnection.OnScanCompletedListener() {
                         public void onScanCompleted(String path, Uri uri) {
                             context.sendBroadcast(new Intent("android.hardware.action.NEW_VIDEO", uri));
-
+                            Intent intent = new Intent(Intent.ACTION_VIEW);
+                            intent.setData(uri);
+                            context.startActivity(intent);
                         }
                     }
             );
-
-            Intent intent = new Intent(Intent.ACTION_VIEW);
-            intent.setData(Uri.fromFile(file));
-            context.startActivity(intent);
         }
         else
         {
