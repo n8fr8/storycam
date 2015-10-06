@@ -18,6 +18,7 @@
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <uses-feature android:name="android.hardware.camera" />
     <uses-feature android:name="android.hardware.microphone" />
@@ -103,6 +104,9 @@
 		    <meta-data
 		       android:name="android.appwidget.provider"
 		       android:resource="@xml/widget_info_take_photo" />
-		</receiver> 
+		</receiver>
+
+        <activity android:name="net.hockeyapp.android.UpdateActivity" />
+
     </application>
 </manifest>
