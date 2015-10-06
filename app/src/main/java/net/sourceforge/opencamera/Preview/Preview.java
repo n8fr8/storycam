@@ -43,6 +43,7 @@ import android.graphics.SurfaceTexture;
 import android.hardware.SensorEvent;
 import android.hardware.SensorManager;
 import android.location.Location;
+import android.media.AudioManager;
 import android.media.CamcorderProfile;
 import android.media.MediaRecorder;
 import android.net.Uri;
@@ -701,6 +702,7 @@ public class Preview implements SurfaceHolder.Callback, TextureView.SurfaceTextu
 	    		if( MyDebug.LOG )
 	    			Log.d(TAG, "about to call video_recorder.stop()");
 				video_recorder.stop();
+				setMuteAll(false);
 	    		if( MyDebug.LOG )
 	    			Log.d(TAG, "done video_recorder.stop()");
 			}
@@ -3384,6 +3386,7 @@ public class Preview implements SurfaceHolder.Callback, TextureView.SurfaceTextu
 		        	camera_controller.initVideoRecorderPostPrepare(video_recorder);
 					if( MyDebug.LOG )
 						Log.d(TAG, "about to start video recorder");
+					setMuteAll(true);
 	            	video_recorder.start();
 					if( MyDebug.LOG )
 						Log.d(TAG, "video recorder started");
@@ -4299,13 +4302,13 @@ public class Preview implements SurfaceHolder.Callback, TextureView.SurfaceTextu
 				// This method is better, as otherwise a previous toast (with different or no clear_toast) never seems to clear if we repeatedly issue new toasts - this doesn't happen if we reuse existing toasts if possible
 				// However should only do this if the previous toast was the most recent toast (to avoid messing up ordering)
 				Toast toast = null;
-				if( clear_toast != null && clear_toast.toast != null && clear_toast.toast == last_toast )
+				if (clear_toast != null && clear_toast.toast != null && clear_toast.toast == last_toast)
 					toast = clear_toast.toast;
 				else {
-					if( clear_toast != null && clear_toast.toast != null )
+					if (clear_toast != null && clear_toast.toast != null)
 						clear_toast.toast.cancel();
 					toast = new Toast(activity);
-					if( clear_toast != null )
+					if (clear_toast != null)
 						clear_toast.toast = toast;
 				}
 				View text = new RotatedTextView(message, activity);
@@ -4456,5 +4459,17 @@ public class Preview implements SurfaceHolder.Callback, TextureView.SurfaceTextu
 		int zoom_factor = camera_controller.getZoom();
 		float zoom_ratio = this.zoom_ratios.get(zoom_factor)/100.0f;
 		return zoom_ratio;
+	}
+
+	private void setMuteAll(boolean mute) {
+		AudioManager manager = (AudioManager) getContext().getSystemService(Context.AUDIO_SERVICE);
+
+		int[] streams = new int[] { AudioManager.STREAM_ALARM,
+				AudioManager.STREAM_DTMF, AudioManager.STREAM_MUSIC,
+				AudioManager.STREAM_RING, AudioManager.STREAM_SYSTEM,
+				AudioManager.STREAM_VOICE_CALL };
+
+		for (int stream : streams)
+			manager.setStreamMute(stream, mute);
 	}
 }
