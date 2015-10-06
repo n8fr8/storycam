@@ -225,13 +225,13 @@ public class MainActivity extends Activity {
 /**
 	    View switchCameraButton = (View) findViewById(R.id.switch_camera);
 	    switchCameraButton.setVisibility(preview.getCameraControllerManager().getNumberOfCameras() > 1 ? View.VISIBLE : View.GONE);
-
+*/
 	    orientationEventListener = new OrientationEventListener(this) {
 			@Override
 			public void onOrientationChanged(int orientation) {
 				MainActivity.this.onOrientationChanged(orientation);
 			}
-        };*/
+        };
 
         View galleryButton = (View)findViewById(R.id.gallery);
         galleryButton.setOnLongClickListener(new View.OnLongClickListener() {
@@ -1140,7 +1140,7 @@ public class MainActivity extends Activity {
 			Log.d(TAG, "onConfigurationChanged()");
 		// configuration change can include screen orientation (landscape/portrait) when not locked (when settings is open)
 		// needed if app is paused/resumed when settings is open and device is in portrait mode
-      //  preview.setCameraDisplayOrientation();
+        preview.setCameraDisplayOrientation();
         super.onConfigurationChanged(newConfig);
     }
 
