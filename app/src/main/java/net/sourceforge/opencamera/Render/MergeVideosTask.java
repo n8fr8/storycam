@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.coremedia.iso.boxes.Container;
@@ -17,6 +18,8 @@ import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator;
 import com.googlecode.mp4parser.authoring.tracks.AACTrackImpl;
 import com.googlecode.mp4parser.authoring.tracks.AppendTrack;
 import com.googlecode.mp4parser.authoring.tracks.MP3TrackImpl;
+import com.mpatric.mp3agic.Mp3File;
+import com.mpatric.mp3agic.UnsupportedTagException;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -105,7 +108,16 @@ public class MergeVideosTask extends AsyncTask<String, Integer, File> {
                 }
                 else if (audioPath.endsWith("mp3"))
                 {
-                    audioTrack = new MP3TrackImpl(new FileDataSourceImpl(audioPath));
+                    try
+                    {
+                        String newAudioPath = processMP3(audioPath);
+                        audioTrack = new MP3TrackImpl(new FileDataSourceImpl(newAudioPath));
+                    }
+                    catch (Exception e)
+                    {
+                        Log.e("MergeVideo","Couldn't process mp3",e);
+                    }
+
 
                 }
                 else if (audioPath.endsWith("mp4"))
@@ -165,6 +177,29 @@ public class MergeVideosTask extends AsyncTask<String, Integer, File> {
         return null;
     }
 
+    private String processMP3 (String inPath) throws Exception
+    {
+        String outPath = null;
+
+        // removing mp3 tags
+        Mp3File mp3file = new Mp3File(inPath);
+        if (mp3file.hasId3v1Tag()) {
+            mp3file.removeId3v1Tag();
+        }
+        if (mp3file.hasId3v2Tag()) {
+            mp3file.removeId3v2Tag();
+        }
+        if (mp3file.hasCustomTag()) {
+            mp3file.removeCustomTag();
+        }
+
+        outPath = inPath + ".processed.mp3";
+
+        mp3file.save(outPath);
+
+        return outPath;
+    }
+
     @Override
     protected void onPostExecute(File file) {
         super.onPostExecute(file);
@@ -175,14 +210,12 @@ public class MergeVideosTask extends AsyncTask<String, Integer, File> {
                     new MediaScannerConnection.OnScanCompletedListener() {
                         public void onScanCompleted(String path, Uri uri) {
                             context.sendBroadcast(new Intent("android.hardware.action.NEW_VIDEO", uri));
-
+                            Intent intent = new Intent(Intent.ACTION_VIEW);
+                            intent.setData(uri);
+                            context.startActivity(intent);
                         }
                     }
             );
-
-            Intent intent = new Intent(Intent.ACTION_VIEW);
-            intent.setData(Uri.fromFile(file));
-            context.startActivity(intent);
         }
         else
         {

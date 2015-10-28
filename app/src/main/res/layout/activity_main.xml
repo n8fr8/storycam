@@ -156,7 +156,7 @@
         android:background="@android:color/transparent"
 
         />
-
+<!--
     <ImageButton
         android:id="@+id/switch_camera"
         android:layout_width="50dp"
@@ -168,7 +168,7 @@
         android:onClick="clickedSwitchCamera"
         android:background="@android:color/transparent"
 
-        />
+        />-->
 
     <!-- should be at left-most -->
     <ImageButton

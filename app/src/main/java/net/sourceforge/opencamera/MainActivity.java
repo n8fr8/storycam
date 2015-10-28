@@ -1,5 +1,7 @@
 package net.sourceforge.opencamera;
 
+import net.hockeyapp.android.CrashManager;
+import net.hockeyapp.android.UpdateManager;
 import net.sourceforge.opencamera.CameraController.CameraController;
 import net.sourceforge.opencamera.CameraController.CameraControllerManager2;
 import net.sourceforge.opencamera.Preview.Preview;
@@ -220,10 +222,10 @@ public class MainActivity extends Activity {
 		clearSeekBar();
 		
         preview = new Preview(applicationInterface, savedInstanceState, ((ViewGroup) this.findViewById(R.id.preview)));
-
+/**
 	    View switchCameraButton = (View) findViewById(R.id.switch_camera);
 	    switchCameraButton.setVisibility(preview.getCameraControllerManager().getNumberOfCameras() > 1 ? View.VISIBLE : View.GONE);
-
+*/
 	    orientationEventListener = new OrientationEventListener(this) {
 			@Override
 			public void onOrientationChanged(int orientation) {
@@ -309,7 +311,7 @@ public class MainActivity extends Activity {
 		if( MyDebug.LOG )
 			Log.d(TAG, "time for Activity startup: " + (System.currentTimeMillis() - time_s));
 
-
+        checkForUpdates();
 	}
 	
 	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
@@ -373,6 +375,8 @@ public class MainActivity extends Activity {
 	    	textToSpeech.shutdown();
 	    	textToSpeech = null;
 	    }
+
+        unregisterManagers();
 	    super.onDestroy();
 	}
 	
@@ -628,7 +632,7 @@ public class MainActivity extends Activity {
 
 
 		//preview.switchVideo(true, true);
-
+        checkForCrashes();
     }
 	
 	@Override
@@ -656,6 +660,7 @@ public class MainActivity extends Activity {
         applicationInterface.getLocationSupplier().freeLocationListeners();
 		releaseSound();
 		preview.onPause();
+        unregisterManagers();
     }
 
     void layoutUI() {
@@ -776,7 +781,8 @@ public class MainActivity extends Activity {
 			layoutParams.addRule(right_of, 0);
 			view.setLayoutParams(layoutParams);
 			view.setRotation(ui_rotation);
-	
+
+            /**
 			view = findViewById(R.id.switch_camera);
 			layoutParams = (RelativeLayout.LayoutParams)view.getLayoutParams();
 			layoutParams.addRule(align_parent_left, 0);
@@ -786,13 +792,13 @@ public class MainActivity extends Activity {
 			layoutParams.addRule(left_of, R.id.switch_video);
 			layoutParams.addRule(right_of, 0);
 			view.setLayoutParams(layoutParams);
-			view.setRotation(ui_rotation);
+			view.setRotation(ui_rotation);*/
 	
 			view = findViewById(R.id.trash);
 			layoutParams = (RelativeLayout.LayoutParams)view.getLayoutParams();
 			layoutParams.addRule(align_parent_top, RelativeLayout.TRUE);
 			layoutParams.addRule(align_parent_bottom, 0);
-			layoutParams.addRule(left_of, R.id.switch_camera);
+			layoutParams.addRule(left_of, R.id.switch_video);
 			layoutParams.addRule(right_of, 0);
 			view.setLayoutParams(layoutParams);
 			view.setRotation(ui_rotation);
@@ -984,7 +990,7 @@ public class MainActivity extends Activity {
             overlayIdx = 0;
 
 		ViewPager viewPager = (ViewPager) findViewById(R.id.overlayPager);
-		viewPager.setCurrentItem(overLayGroup[overlayIdx],false);
+		viewPager.setCurrentItem(overLayGroup[overlayIdx], false);
 
 
 	}
@@ -994,7 +1000,7 @@ public class MainActivity extends Activity {
         ViewPager viewPager = (ViewPager) findViewById(R.id.overlayPager);
         ImageAdapter adapter = new ImageAdapter(this);
         viewPager.setAdapter(adapter);
-        viewPager.setCurrentItem(overLayGroup[overlayIdx],false);
+        viewPager.setCurrentItem(overLayGroup[overlayIdx], false);
 		/**
 		viewPager.setOnTouchListener(new View.OnTouchListener() {
 			@Override
@@ -1148,6 +1154,7 @@ public class MainActivity extends Activity {
 		if( MyDebug.LOG )
 			Log.d(TAG, "clickedSwitchCamera");
 		this.closePopup();
+        /*
 		if( this.preview.canSwitchCamera() ) {
 			int cameraId = preview.getCameraId();
 			int n_cameras = preview.getCameraControllerManager().getNumberOfCameras();
@@ -1162,7 +1169,7 @@ public class MainActivity extends Activity {
 		    switchCameraButton.setEnabled(false); // prevent slowdown if user repeatedly clicks
 			this.preview.setCamera(cameraId);
 		    switchCameraButton.setEnabled(true);
-		}
+		}*/
     }
 
     public void clickedSwitchVideo(View view) {
@@ -2823,7 +2830,7 @@ public class MainActivity extends Activity {
     private void recordAudio () {
 
         try {
-            File fileAudio = new File("/sdcard/storycam/audio" + new java.util.Date().getTime() + ".mp4");
+            File fileAudio = new File("/sdcard/storycam/audio" + new java.util.Date().getTime() + ".aac");
             fileAudio.getParentFile().mkdirs();
             mLastAudioPath = fileAudio.getAbsolutePath();
             AudioRecorder ar = new AudioRecorder();
@@ -2846,4 +2853,20 @@ public class MainActivity extends Activity {
 
     public static final int ACTIVITY_CHOOSE_SOUND = 9999;
     private String mLastAudioPath;
+
+	private void checkForCrashes() {
+		CrashManager.register(this, APP_ID);
+	}
+
+	private void checkForUpdates() {
+		// Remove this for store builds!
+		UpdateManager.register(this, APP_ID);
+	}
+
+    private void unregisterManagers() {
+        UpdateManager.unregister();
+        // unregister other managers if necessary...
+    }
+
+    public final static String APP_ID = "44d01b9b72aad53837ba5675184b6a01";
 }

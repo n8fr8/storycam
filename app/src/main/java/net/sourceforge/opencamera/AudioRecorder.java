@@ -84,8 +84,8 @@ public class AudioRecorder implements Runnable {
         mAudioFilePath = fileAudio;
 
         mMediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-        mMediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
-        mMediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.HE_AAC);
+        mMediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.AAC_ADTS);
+        mMediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
         mMediaRecorder.setAudioChannels(1);
         mMediaRecorder.setAudioEncodingBitRate(96000);
         mMediaRecorder.setAudioSamplingRate(44100);
